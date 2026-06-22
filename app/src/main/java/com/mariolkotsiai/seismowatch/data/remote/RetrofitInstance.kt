@@ -1,27 +1,27 @@
-package com.mariol.seismowatch.data.remote
+package com.mariolkotsiai.seismowatch.data.remote
 
-import com.mariol.seismowatch.data.remote.api.EarthquakeApiService
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
+import com.mariolkotsiai.seismowatch.data.remote.api.EarthquakeApiService
+import com.mariolkotsiai.seismowatch.data.remote.api.NasaEonetApiService
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
-
-    private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY // βλέπεις το raw JSON στο Logcat
-    }
-
-    private val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
-        .build()
+    private const val USGS_BASE_URL = "https://earthquake.usgs.gov/"
+    private const val NASA_BASE_URL = "https://eonet.gsfc.nasa.gov/"
 
     val earthquakeApi: EarthquakeApiService by lazy {
         Retrofit.Builder()
-            .baseUrl("https://earthquake.usgs.gov/")
-            .client(okHttpClient)
+            .baseUrl(USGS_BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
             .create(EarthquakeApiService::class.java)
+    }
+
+    val nasaEonetApi: NasaEonetApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(NASA_BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(NasaEonetApiService::class.java)
     }
 }
