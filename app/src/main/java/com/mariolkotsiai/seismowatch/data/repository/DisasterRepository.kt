@@ -17,8 +17,12 @@ class DisasterRepository(
 ) {
 
     suspend fun fetchAllDisasters(userLat: Double, userLon: Double): List<DisasterEvent> = withContext(Dispatchers.IO) {
-        val earthquakesDeferred = async { runCatching { earthquakeApi.getEarthquakes() }.getOrNull() }
-        val eonetDeferred = async { runCatching { nasaEonetApi.getEvents() }.getOrNull() }
+        val earthquakesDeferred = async {
+            runCatching { earthquakeApi.getEarthquakes() }.getOrNull()
+        }
+        val eonetDeferred = async {
+            runCatching { nasaEonetApi.getEvents() }.getOrNull()
+        }
 
         val usgsResponse = earthquakesDeferred.await()
         val eonetResponse = eonetDeferred.await()
@@ -53,7 +57,8 @@ class DisasterRepository(
 
         // NASA EONET Parsing
         eonetResponse?.events?.forEach { event ->
-            val geometry = event.geometries.firstOrNull()
+            android.util.Log.d("NASA_DEBUG", "Event Title: ${event.title}, Categories: ${event.categories.map { it.id }}")
+            val geometry = event.geometries?.firstOrNull()
             val coords = geometry?.coordinates
             if (coords != null && coords.size >= 2) {
                 val lon = coords[0]
