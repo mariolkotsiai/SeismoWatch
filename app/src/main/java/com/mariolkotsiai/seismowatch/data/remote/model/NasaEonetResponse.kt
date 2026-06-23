@@ -19,6 +19,28 @@ data class EonetCategory(
 )
 
 data class EonetGeometry(
-    @SerializedName("coordinates") val coordinates: List<Double>, // [longitude, latitude]
+    @SerializedName("type") val type: String?,
+    @SerializedName("coordinates") val coordinates: Any?, // Gson θα φέρει ό,τι υπάρχει
     @SerializedName("date") val date: String
-)
+) {
+    fun getLonLat(): Pair<Double, Double>? {
+        return when (val c = coordinates) {
+            is List<*> -> {
+                val first = c.firstOrNull()
+                if (first is Double) {
+                    // Format: [lon, lat]
+                    val lon = c.getOrNull(0) as? Double ?: return null
+                    val lat = c.getOrNull(1) as? Double ?: return null
+                    Pair(lon, lat)
+                } else if (first is List<*>) {
+                    // Format: [[lon, lat], ...]
+                    val inner = first
+                    val lon = inner.getOrNull(0) as? Double ?: return null
+                    val lat = inner.getOrNull(1) as? Double ?: return null
+                    Pair(lon, lat)
+                } else null
+            }
+            else -> null
+        }
+    }
+}

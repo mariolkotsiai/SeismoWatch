@@ -7,7 +7,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
     private const val USGS_BASE_URL = "https://earthquake.usgs.gov/"
-    private const val NASA_BASE_URL = "https://eonet.gsfc.nasa.gov/"
+    private const val NASA_BASE_URL = "https://eonet.sci.gsfc.nasa.gov/"
 
     val earthquakeApi: EarthquakeApiService by lazy {
         Retrofit.Builder()

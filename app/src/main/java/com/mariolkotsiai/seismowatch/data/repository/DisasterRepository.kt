@@ -21,11 +21,16 @@ class DisasterRepository(
             runCatching { earthquakeApi.getEarthquakes() }.getOrNull()
         }
         val eonetDeferred = async {
-            runCatching { nasaEonetApi.getEvents() }.getOrNull()
+            runCatching {
+                nasaEonetApi.getEvents()
+            }.onFailure {
+                android.util.Log.e("NASA_DEBUG", "EONET API Error: ${it.message}", it)
+            }.getOrNull()
         }
 
         val usgsResponse = earthquakesDeferred.await()
         val eonetResponse = eonetDeferred.await()
+        android.util.Log.d("NASA_DEBUG", "EONET Response: ${eonetResponse?.events?.size} events")
 
         val combinedEvents = mutableListOf<DisasterEvent>()
 
@@ -59,10 +64,10 @@ class DisasterRepository(
         eonetResponse?.events?.forEach { event ->
             android.util.Log.d("NASA_DEBUG", "Event Title: ${event.title}, Categories: ${event.categories.map { it.id }}")
             val geometry = event.geometries?.firstOrNull()
-            val coords = geometry?.coordinates
-            if (coords != null && coords.size >= 2) {
-                val lon = coords[0]
-                val lat = coords[1]
+            val lonLat = geometry?.getLonLat()
+            if (lonLat != null) {
+                val lon = lonLat.first
+                val lat = lonLat.second
                 val type = if (event.categories.any { it.id == "wildfires" }) DisasterType.FIRE else DisasterType.STORM
 
                 val severity = if (type == DisasterType.FIRE) 7.0 else 6.0
